@@ -1,30 +1,36 @@
 module Garb
   class Engine
-    attr_accessor :logger, :operator
-    attr_reader :population, :epoch, :fitness, :best, :options 
+    attr_accessor :population, :logger, :operator, :fitness
+    attr_reader :epoch, :fitness, :options, :champions 
     
-    def initialize population, options={}
-      @population = population
+    def initialize options={}
       @options = options
-      @logger = options[:logger]
       @epoch = 0
-      @fitness = options[:fitness] || lambda { |c| c.fitness }
-      @best = _best
+      @fitness = lambda { |c| c.fitness }
       
-      @operator = options[:operator] || Operator::Pipeline.new(
-        Operator::TournamentSelection.new(options[:p_tournament] || 0.9, @fitness),
-        Operator::Crossover.new(options[:p_crossover] || 0.2),
-        Operator::Mutation.new(options[:p_mutation] || 0.01)
+      yield self if block_given?
+      
+      @champions = [_best]
+      
+      @operator ||= Applicator::Pipeline.new(
+        Applicator::TournamentSelection.new(options[:p_tournament] || 0.9, population.size, @fitness),
+        Applicator::KeepParents.new(Operator::Crossover::Applicator::Consecutive.new(Operator::Crossover.new(options[:p_crossover] || 0.2))),
+        Operator::Mutation::Applicator::Consecutive.new(Operator::Mutation.new(options[:p_mutation] || 0.01)),
+        Applicator::KeepBest.new(self),
       )
     end
     
     def evolve
       @epoch += 1
       logger.info "Epoch #{ epoch }, evolving population of #{ population.size } chromosomes..." if logger
-      @population = @operator.apply_on @population
+      @population = operator.apply @population
       best = _best
       logger.info "Epoch #{ epoch }, best chromosome fitness: #{ @fitness.call best }..." if logger
-      @best = best if @fitness.call(best) > @fitness.call(@best)
+      @champions << best if @fitness.call(best) > @fitness.call(@champions.last)
+    end
+    
+    def best
+      @champions.last
     end
     
   private

@@ -1,13 +1,13 @@
 module Garb
-  class Operator
+  class Applicator
     class Pipeline < self
       def initialize *operators
         @operators = operators.flatten
       end
       
-      def apply_on population
+      def apply population
         @operators.reduce(population) do |population, operator|
-          operator.apply_on population
+          operator.apply population
         end
       end
     end

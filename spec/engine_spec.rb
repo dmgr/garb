@@ -35,7 +35,9 @@ end
 
 describe Garb::Engine do
   it 'default operator should works' do
-    ga = Garb::Engine.new Array.new(20) { Chromosome.generate }
+    ga = Garb::Engine.new do |e|
+      e.population = Array.new(20) { Chromosome.generate }
+    end
     
     20.times do |i|
       # puts "--- #{ i } | #{ ga.best.fitness }---"
@@ -64,19 +66,22 @@ describe Garb::Engine do
       end
     }.new
     
-    ga = Garb::Engine.new Array.new(100) { Chromosome.generate }, fitness: lambda { |c| c.count { |v| v == 1 } }
-    
-    ga.operator = Garb::Operator::Pipeline.new(
-      Garb::Operator::TournamentSelection.new(0.9, ga.fitness),
-      Garb::Operator::Probability.new(0.2, crossover),
-      Garb::Operator::Probability.new(0.5, mutation)
-    )
-    
-    20.times do |i|
-      puts "--- #{ i } | #{ ga.best.fitness }---"
-      ga.evolve
+    engine = Garb::Engine.new do |e|
+      e.population = Array.new(40) { Chromosome.generate }
+      e.fitness = lambda { |c| c.count { |v| v == 1 } }
+      e.operator = Garb::Applicator::Pipeline.new(
+        Garb::Applicator::TournamentSelection.new(0.9, e.population.size, e.fitness),
+        Garb::Applicator::KeepParents.new(Garb::Applicator::Probability.new(0.2, crossover)),
+        Garb::Applicator::Probability.new(0.1, mutation),
+        Garb::Applicator::KeepBest.new(e),
+      )
     end
     
-    ga.best.fitness.should == 10
+    20.times do |i|
+      # puts "--- #{ i } | #{ engine.best.fitness }---"
+      engine.evolve
+    end
+    
+    engine.best.fitness.should == 10
   end
 end

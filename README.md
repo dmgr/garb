@@ -24,13 +24,16 @@ class Chromosome
   end
 end
 
-ga = Garb::Engine.new Array.new(20) { Chromosome.generate }, logger: Logger.new(STDOUT)
+engine = Garb::Engine.new do |e|
+	e.population = Array.new(20) { Chromosome.generate }
+	e.logger = Logger.new(STDOUT)
+end
     
 20.times do |i|
-  ga.evolve
+  engine.evolve
 end
 
-ga.best
+engine.best
 ```
 
 See a spec file for more examples.
