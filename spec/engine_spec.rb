@@ -69,10 +69,10 @@ describe Garb::Engine do
     engine = Garb::Engine.new do |e|
       e.population = Array.new(40) { Chromosome.generate }
       e.fitness = lambda { |c| c.count { |v| v == 1 } }
-      e.operator = Garb::Applicator::Pipeline.new(
+      e.applicator = Garb::Applicator::Pipeline.new(
         Garb::Applicator::TournamentSelection.new(0.9, e.population.size, e.fitness),
         Garb::Applicator::KeepParents.new(Garb::Applicator::Probability.new(0.2, crossover)),
-        Garb::Applicator::Probability.new(0.1, mutation),
+        Garb::Applicator::Probability.new(0.2, mutation),
         Garb::Applicator::KeepBest.new(e),
       )
     end
