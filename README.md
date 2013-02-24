@@ -14,10 +14,10 @@ class Chromosome
   def fitness
   end
 
-  def crossover c2
+  def crossover chromosome
   end
 
-  def mutate p
+  def mutate probability
   end
   
   def self.generate
@@ -25,8 +25,8 @@ class Chromosome
 end
 
 engine = Garb::Engine.new do |e|
-	e.population = Array.new(20) { Chromosome.generate }
-	e.logger = Logger.new(STDOUT)
+  e.population = Array.new(20) { Chromosome.generate }
+  e.logger = Logger.new(STDOUT)
 end
     
 20.times do |i|
