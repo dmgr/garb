@@ -1,12 +1,14 @@
 module Garb
   class Applicator
     class Pipeline < self
-      def initialize *operators
-        @operators = operators.flatten
+      attr_reader :applicators
+      
+      def initialize *applicators
+        @applicators = applicators.flatten
       end
       
       def apply population
-        @operators.reduce(population) do |population, operator|
+        @applicators.reduce(population) do |population, operator|
           operator.apply population
         end
       end
