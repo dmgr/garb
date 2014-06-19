@@ -40,7 +40,6 @@ describe Garb::Engine do
     end
     
     20.times do |i|
-      # puts "--- #{ i } | #{ ga.best.fitness }---"
       ga.evolve
     end
     
